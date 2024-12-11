@@ -14,6 +14,28 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final authInstance = FirebaseAuth.instance;
+Future<void> loginUser(String email, String password) async {
+    try {
+      final userCredential = await authInstance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      print(" Du bist eingeloggt: ${userCredential.user?.email}");
+    } on FirebaseAuthException catch (e) {
+      print("Firebase Auth Exception: ${e.message}");
+    } catch (e) {
+      print("Allgemeiner Fehler: $e");
+    }
+    
+  }
+  Future<void> logoutUser() async {
+    try {
+      await authInstance.signOut();
+      print("Du bist ausgeloggt");
+    } catch (e) {
+      print("Fehler beim Logout: $e");
+    }
+  }
 
 Stream<User?> get onAuthStateChanged => authInstance.authStateChanges();
 
@@ -50,18 +72,10 @@ Stream<User?> get onAuthStateChanged => authInstance.authStateChanges();
              const SizedBox(height: 32),
             ElevatedButton(
               onPressed: () async { 
-                String email = emailController.text.trim();
-                String password = passwordController.text.trim();
-                try {
-                  await authInstance.signInWithEmailAndPassword(
-                    email: email,
-                    password: password,
-                  );
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Du bist eingeloggt")),
-                  );
-                }
+                String email = emailController.text;
+                String password = passwordController.text;
+                loginUser(email, password);
+               
               },
               child: const Text("Login", 
               style: TextStyle(
@@ -69,8 +83,8 @@ Stream<User?> get onAuthStateChanged => authInstance.authStateChanges();
             ),
              const SizedBox(height: 32),
             ElevatedButton(
-              onPressed: () async {
-                await authInstance.signOut();
+              onPressed: ()  {
+            logoutUser();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("Du bist ausgeloggt")),
                 );
